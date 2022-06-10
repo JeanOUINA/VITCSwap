@@ -32,6 +32,7 @@ jobs:
       - name: Install and Build
         run: |
           pnpm install
+          node fix_vitejs.js
           pnpm build
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@4.0.0
