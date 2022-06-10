@@ -1,0 +1,2 @@
+"use strict";(self.webpackJsonp=self.webpackJsonp||[]).push([[507],{2507:(n,e,t)=>{t.r(e),t.d(e,{default:()=>l});var i=t(13),s=t(4699);function l(){return(0,i.tZ)("div",{style:{display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",textAlign:"center",marginTop:"100px"}},(0,i.tZ)(s.Z,{variant:"h1",css:{fontFamily:"poppins-semibold, poppins, sans-serif"}},"404 Not Found"),(0,i.tZ)("div",{style:{marginTop:"10px"}}),(0,i.tZ)(s.Z,{variant:"h4"},"You likely clicked on an invalid link."))}}}]);
+//# sourceMappingURL=507.js.map
