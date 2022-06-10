@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?> <!-- Created with Vectornator for iOS (http://vectornator.io/) --><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;" xmlns:vectornator="http://vectornator.io" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" viewBox="0 0 2048 2048">
+<metadata>
+<vectornator:setting key="DynamicGuides" value="1"/>
+<vectornator:setting key="Units" value="Points"/>
+<vectornator:setting key="GuidesVisible" value="1"/>
+<vectornator:setting key="RulersVisible" value="1"/>
+<vectornator:setting key="SnapToGuides" value="1"/>
+<vectornator:setting key="GridSpacing" value="36"/>
+</metadata>
+<defs>
+<linearGradient y1="1550.84" id="LinearGradient" x1="977.861" y2="1550.84" x2="2061.14" gradientUnits="userSpaceOnUse" gradientTransform="matrix(0.629315 0.369856 -0.369856 0.629315 825.17 -826.895)">
+<stop stop-color="#ff6729" offset="0"/>
+<stop stop-color="#c8440c" offset="0.998541"/>
+</linearGradient>
+<linearGradient y1="2638.71" id="LinearGradient_2" x1="977.861" y2="2638.71" x2="2061.14" gradientUnits="userSpaceOnUse" gradientTransform="matrix(0.629315 0.369856 -0.369856 0.629315 825.17 -826.895)">
+<stop stop-color="#ff6729" offset="0"/>
+<stop stop-color="#c8440c" offset="0.998541"/>
+</linearGradient>
+</defs>
+<g id="Layer 1" vectornator:layerName="Layer 1">
+<g opacity="1">
+<path d="M661.904+859.652C728.859+922.405+804.895+979.657+889.061+1029.12C1049.13+1123.19+1218.56+1177.95+1381.81+1195.35L1569.13+876.605C1680.13+687.751+1617.46+446.407+1428.6+335.415C1240.9+225.099+998.4+287.094+887.411+475.948L661.904+859.652Z" fill-rule="evenodd" fill="url(#LinearGradient)" opacity="1"/>
+<path d="M643.733+890.569L478.864+1171.1C367.873+1359.95+430.54+1601.29+619.397+1712.29C808.251+1823.28+1049.59+1760.6+1160.59+1571.75L1332.41+1279.4C1200.02+1250.17+1066.61+1198.56+939.265+1123.72C826.598+1057.51+727.336+978.249+643.733+890.569Z" fill-rule="evenodd" fill="url(#LinearGradient_2)" opacity="1"/>
+</g>
+</g>
+</svg>

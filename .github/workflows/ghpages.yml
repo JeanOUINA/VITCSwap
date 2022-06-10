@@ -1,0 +1,41 @@
+# Shamelessly stolen from nault/nault
+name: GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2 # If you're using actions/checkout@v2 you must set persist-credentials to false in most cases for the deployment to work correctly.
+        with:
+          persist-credentials: false
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Install APT dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install build-essential git -y
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 6.0.2
+
+      - name: Install and Build
+        run: |
+          pnpm install
+          pnpm build
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@4.0.0
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          branch: gh-pages # The branch the action should deploy to.
+          folder: build # The folder the action should deploy.

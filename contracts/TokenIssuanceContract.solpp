@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma soliditypp ^0.8.0;
+
+abstract contract TokenIssuanceContract {
+    function GetTokenInformation(vitetoken tokenId) external virtual;
+    function IssueToken(
+        bool isReIssuable,
+        string calldata tokenName,
+        string calldata tokenSymbol,
+        uint256 totalSupply,
+        uint8 decimals,
+        uint256 maxSupply,
+        bool isOwnerBurnOnly
+    ) external virtual;
+    event issue(vitetoken indexed token);
+}

@@ -1,0 +1,327 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma soliditypp ^0.8.0;
+
+import "./Votable.solpp";
+import "./TokenIssuanceContract.solpp";
+
+contract VITCSwap is Votable {
+    // constant
+    vitetoken constant public VITE_TOKEN = "tti_5649544520544f4b454e6e40";
+    address payable public DAO_ADDRESS = payable("vite_9c13b9720809499a238d33d5bb72e69fe0eb4fb2678a389140");
+    vitetoken constant public NULL_TOKEN = "tti_000000000000000000004cfd";
+    uint public PAIR_CREATION_FEE = 100 vite;
+    uint public immutable UINT256_MAX = 2**256-1;
+    
+    event PairCreationFeeChange(uint fee);
+    function changePairCreationFee(uint newFee) external onlyOwner {
+        PAIR_CREATION_FEE = newFee;
+        emit PairCreationFeeChange(newFee);
+    }
+
+    event DAOAddressChange(address addr);
+    function setDAOAddress(address payable newAddress) external onlyOwner {
+        DAO_ADDRESS = newAddress;
+        emit DAOAddressChange(newAddress);
+    }
+
+    // Pair creation
+    mapping(vitetoken => bool) public pairs;
+
+    event NewPair(vitetoken indexed token);
+    function createNewPair(vitetoken token) external payable {
+        require(msg.value == PAIR_CREATION_FEE);
+        require(msg.token == VITE_TOKEN);
+        require(token != VITE_TOKEN && token != NULL_TOKEN);
+        require(!pairs[token]);
+        pairs[token] = true;
+
+        DAO_ADDRESS.transfer(msg.token, msg.value);
+        emit NewPair(token);
+    }
+
+    // Liquidity & price
+    mapping(address => uint) viteBalances;
+    function getVITEBalance(address addr) view public returns(uint userBalance) {
+        return viteBalances[addr];
+    }
+
+    event VITEDeposit(address indexed addr, uint amount, uint newBalance);
+    function depositVITE() external payable {
+        require(msg.value > 0 && msg.token == VITE_TOKEN);
+        viteBalances[msg.sender] += msg.value;
+        emit VITEDeposit(msg.sender, msg.value, viteBalances[msg.sender]);
+    }
+
+    event VITEWithdrawal(address indexed addr, uint amount, uint newBalance);
+    function withdrawVITE(uint amount) external {
+        require(amount > 0 && viteBalances[msg.sender] >= amount);
+        viteBalances[msg.sender] -= amount;
+        payable(msg.sender).transfer(VITE_TOKEN, amount);
+        emit VITEWithdrawal(msg.sender, amount, viteBalances[msg.sender]);
+    }
+
+    mapping(address => mapping(vitetoken => uint)) liquidityPerAddress;
+    function getLiquidityTokenBalance(address _address, vitetoken token) view external returns(uint lpBalance) {
+        return liquidityPerAddress[_address][token];
+    }
+    mapping(vitetoken => Liquidity) tokenLiquidity;
+    struct Liquidity {
+        uint total;
+        uint totalVITE;
+        uint k;
+        uint tknSupply;
+        vitetoken token;
+    }
+
+    function getLiquidity(vitetoken token) external view returns(
+        uint total,
+        uint totalVITE,
+        uint k,
+        uint tknSupply,
+        vitetoken lpToken
+    ) {
+        Liquidity memory liq = tokenLiquidity[token];
+        total = liq.total;
+        totalVITE = liq.totalVITE;
+        k = liq.k;
+        tknSupply = liq.tknSupply;
+        lpToken = liq.token;
+    }
+
+    function removeLiquidity(vitetoken token, uint poolAmount) external payable {
+        require(pairs[token]);
+        require(token != VITE_TOKEN);
+        require(tokenLiquidity[token].totalVITE > 0);
+        require(poolAmount > 0);
+
+        if(msg.value > 0){
+            // this line is redundant
+            require(tokenLiquidity[token].token != NULL_TOKEN);
+            require(msg.token == tokenLiquidity[token].token);
+            require(msg.value == poolAmount);
+            // the _removeLiquidity function looks for this variable
+            // so just increase it
+            liquidityPerAddress[msg.sender][token] += poolAmount;
+        }
+
+        _removeLiquidity(msg.sender, token, poolAmount);
+    }
+    function addOriginalLiquidity(uint viteAmount) external payable {
+        require(pairs[msg.token]);
+        require(msg.token != VITE_TOKEN);
+        require(msg.value > 0);
+        require(tokenLiquidity[msg.token].totalVITE == 0);
+        require(viteAmount > 0);
+
+        uint userBalance = getVITEBalance(msg.sender);
+        require(viteAmount <= userBalance);
+
+        viteBalances[msg.sender] -= viteAmount;
+        _addLiquidity(msg.sender, msg.token, msg.value, viteAmount);
+    }
+    function addLiquidity() external payable {
+        require(pairs[msg.token]);
+        require(msg.token != VITE_TOKEN);
+        require(msg.value > 0);
+        require(tokenLiquidity[msg.token].totalVITE > 0);
+
+        uint userBalance = getVITEBalance(msg.sender);
+        Liquidity storage liq = tokenLiquidity[msg.token];
+        uint requiredVITE = liq.totalVITE * msg.value / liq.total;
+        require(requiredVITE > 0);
+        require(requiredVITE <= userBalance);
+
+        viteBalances[msg.sender] -= requiredVITE;
+        _addLiquidity(msg.sender, msg.token, msg.value, requiredVITE);
+    }
+    function withdrawLiquidityToken(vitetoken token) external {
+        Liquidity storage liq = tokenLiquidity[token];
+        require(liq.token != NULL_TOKEN);
+
+        // Send to the address the lp token as a real token
+        // reentrency attack protection but this shouldn't be needed
+        uint bal = liquidityPerAddress[msg.sender][token];
+        require(bal > 0);
+        liquidityPerAddress[msg.sender][token] = 0;
+        payable(msg.sender).transfer(liq.token, bal);
+    }
+    event AddLiquidity(address indexed addr, vitetoken indexed token, uint tokenAmount, uint viteAmount, uint tokenTotal, uint viteTotal);
+    function _addLiquidity(address addr, vitetoken token, uint value, uint viteValue) private {
+        Liquidity storage liq = tokenLiquidity[token];
+        if(liq.tknSupply == 0){
+            liq.tknSupply = 1e18;
+            // burn `1` raw lp token
+            liquidityPerAddress[addr][token] += 1e18 - 1;
+        }else{
+            uint tkns = liq.tknSupply * viteValue / liq.totalVITE;
+            liquidityPerAddress[addr][token] += tkns;
+            liq.tknSupply += tkns;
+        }
+        liq.total += value;
+        liq.totalVITE += viteValue;
+        liq.k = liq.total * liq.totalVITE;
+        emit AddLiquidity(addr, token, value, viteValue, liq.total, liq.totalVITE);
+
+        if(liq.token != NULL_TOKEN){
+            // Send to the address the lp token as a real token
+            // reentrency attack protection but this shouldn't be needed
+            uint bal = liquidityPerAddress[addr][token];
+            liquidityPerAddress[addr][token] = 0;
+            payable(addr).transfer(liq.token, bal);
+        }
+    }
+    event RemoveLiquidity(address indexed addr, vitetoken indexed token, uint tokenAmount, uint viteAmount, uint tokenTotal, uint viteTotal);
+    function _removeLiquidity(address addr, vitetoken token, uint poolAmount) private {
+        require(liquidityPerAddress[addr][token] >= poolAmount);
+
+        Liquidity storage liq = tokenLiquidity[token];
+        uint viteAmount = liq.totalVITE * poolAmount / liq.tknSupply;
+        uint tokenAmount = liq.total * poolAmount / liq.tknSupply;
+        require(viteAmount > 0 && tokenAmount > 0);
+
+        liq.tknSupply -= poolAmount;
+        liq.total -= tokenAmount;
+        liq.totalVITE -= viteAmount;
+        liq.k = liq.total * liq.totalVITE;
+        liquidityPerAddress[addr][token] -= poolAmount;
+        emit RemoveLiquidity(addr, token, tokenAmount, viteAmount, liq.total, liq.totalVITE);
+
+        payable(addr).transfer(VITE_TOKEN, viteAmount);
+        payable(addr).transfer(token, tokenAmount);
+    }
+
+    function getConversion(vitetoken from, vitetoken to, uint amount) view external returns(uint returnAmount) {
+        uint result = amount;
+        if(from != VITE_TOKEN){
+            result = getVITEConversion(from, result);
+        }
+        if(to != VITE_TOKEN){
+            result = getCurrencyConversion(to, result);
+        }
+        return result;
+    }
+
+    function getInversedConversion(vitetoken from, vitetoken to, uint amount) view external returns(uint returnAmount) {
+        uint result = amount;
+        if(to != VITE_TOKEN){
+            result = getInversedCurrencyConversion(to, result);
+        }
+        if(from != VITE_TOKEN){
+            result = getInversedVITEConversion(from, result);
+        }
+        return result;
+    }
+
+    function getVITEConversion(vitetoken token, uint amount) view public returns(uint returnAmount) {
+        require(pairs[token]);
+        require(tokenLiquidity[token].totalVITE > 0);
+
+        Liquidity memory liq = tokenLiquidity[token];
+        return (liq.totalVITE - liq.k / (liq.total+amount)) * 998/1000;
+    }
+    function getInversedVITEConversion(vitetoken token, uint amount) view public returns(uint returnAmount) {
+        require(pairs[token]);
+        require(tokenLiquidity[token].totalVITE > 0);
+
+        Liquidity memory liq = tokenLiquidity[token];
+        return liq.k/(liq.totalVITE-amount*1000/998) - liq.total;
+    }
+    function getCurrencyConversion(vitetoken token, uint amount) view public returns(uint returnAmount) {
+        require(pairs[token]);
+        require(tokenLiquidity[token].totalVITE > 0);
+
+        Liquidity memory liq = tokenLiquidity[token];
+        uint fee = amount * 2/1000;
+        return liq.total - liq.k / (liq.totalVITE+amount-fee);
+    }
+    function getInversedCurrencyConversion(vitetoken token, uint amount) view public returns(uint returnAmount) {
+        require(pairs[token]);
+        require(tokenLiquidity[token].totalVITE > 0);
+
+        Liquidity memory liq = tokenLiquidity[token];
+        return (liq.k/(liq.total-amount)-liq.totalVITE)*1000/998;
+    }
+
+    // the SwapInternal event will be used to refresh prices on the frontend
+    event SwapInternal(address indexed _address, vitetoken indexed fromToken, vitetoken indexed toToken, uint fromAmount, uint toAmount, uint total, uint totalVITE);
+    // the Swap event will be used to have order history
+    event Swap(address indexed _address, vitetoken indexed fromToken, vitetoken indexed toToken, uint fromAmount, uint toAmount);
+    function swap(address recipient, vitetoken targetToken, uint minimum) external payable {
+        require(msg.token != targetToken);
+        
+        uint amount = msg.value;
+        if(msg.token != VITE_TOKEN){
+            require(pairs[msg.token]);
+            Liquidity storage liq = tokenLiquidity[msg.token];
+            require(liq.totalVITE > 0);
+
+            uint viteAmount = liq.totalVITE - liq.k / (liq.total+amount);
+            // don't process the swap if there's not enough liquidity to handle it
+            require(viteAmount > 0);
+
+            liq.total += amount;
+            liq.totalVITE -= viteAmount;
+            emit SwapInternal(msg.sender, msg.token, VITE_TOKEN, amount, viteAmount, liq.total, liq.totalVITE);
+            amount = viteAmount;
+        }
+
+        if(targetToken != VITE_TOKEN){
+            require(pairs[targetToken]);
+            Liquidity storage liq = tokenLiquidity[targetToken];
+            require(liq.totalVITE > 0);
+
+            uint tokenAmount = liq.total - liq.k / (liq.totalVITE+amount);
+            // don't process the swap if there's not enough liquidity to handle it
+            require(tokenAmount > 0);
+
+            liq.total -= tokenAmount;
+            liq.totalVITE += amount;
+            emit SwapInternal(msg.sender, VITE_TOKEN, targetToken, amount, tokenAmount, liq.total, liq.totalVITE);
+            amount = tokenAmount;
+        }
+        emit Swap(msg.sender, msg.token, targetToken, msg.value, amount);
+
+        // slippage
+        require(amount >= minimum);
+
+        payable(recipient).transfer(targetToken, amount);
+    }
+
+    // lp tokens
+    mapping(vitetoken => CachedToken) public cached_tokens;
+    struct CachedToken {
+        bool isReIssuable;
+        string tokenName;
+        string tokenSymbol;
+        uint totalSupply;
+        uint decimals;
+        bool fetched;
+    }
+
+    // wanted to do this in a decentralized manner but...
+    // CompilerError: Stack too deep when compiling inline assembly: Variable headStart is 2 slot(s) too deep inside the stack.
+    // and if I remove some parameters, the function descriptor (the first four bytes of the request) is not the same, so the function never gets executed.
+    function cacheTokenInfo(vitetoken tokenId, bool isReIssuable, string calldata tokenName, string calldata tokenSymbol, uint totalSupply, uint decimals) external onlyOwner {
+        CachedToken storage token = cached_tokens[tokenId];
+        token.isReIssuable = isReIssuable;
+        token.tokenName = tokenName;
+        token.tokenSymbol = tokenSymbol;
+        token.totalSupply = totalSupply;
+        token.decimals = decimals;
+
+        token.fetched = true;
+    }
+
+    function setLiquidityToken(vitetoken token) external payable onlyOwner {
+        require(pairs[token]);
+        require(msg.value == UINT256_MAX);
+
+        CachedToken storage lptoken = cached_tokens[msg.token];
+        require(lptoken.fetched);
+        Liquidity storage liq = tokenLiquidity[token];
+
+        require(liq.token == NULL_TOKEN);
+        require(lptoken.decimals == 18 && lptoken.isReIssuable == false && lptoken.totalSupply == UINT256_MAX);
+        liq.token = msg.token;
+    }
+}
