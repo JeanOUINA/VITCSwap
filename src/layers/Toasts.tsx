@@ -34,10 +34,10 @@ export function showToast(text:string, options: {timeout?: number, type?:toastTy
     icon: false
 }){
     const id = uuid()
-    let classNames = ["custom-toast"]
+    const classNames = ["custom-toast"]
     if(options.type)classNames.push("toast-"+options.type)
     if(options.type && options.icon) classNames.push("icon");
-    let getElem = () => {
+    const getElem = () => {
         return <div key={id} className={classNames.join(" ")}>
             {text}
         </div>

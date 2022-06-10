@@ -1,4 +1,5 @@
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react"
 import { Box, Typography, Divider, Button, Skeleton } from "@mui/material";
 import React, { useEffect, useState } from "react";
@@ -9,7 +10,7 @@ import useTokenDetails from "../hooks/useTokenDetails";
 import useTokenInfo from "../hooks/useTokenInfos";
 import { AMOUNT_REGEXP } from "../utils";
 import TokenSelect from "./TokenSelect";
-import AddIcon from '@mui/icons-material/Add';
+import AddIcon from "@mui/icons-material/Add";
 import { SwapAmount } from "./SwapAmount";
 import { contract, defaultToken } from "../vite";
 import BigNumber from "bignumber.js";
@@ -48,7 +49,7 @@ export default function RemoveLiquidity(){
     // listen for liquidity changes
     useEffect(() => {
         if(lastModified == null)return
-        let listener = () => {
+        const listener = () => {
             setRefreshRate(e => e + 1)
         }
         events.on(`RATE_CHANGE_${to}`, listener)

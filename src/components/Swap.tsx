@@ -1,6 +1,7 @@
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react"
-import { Box, Typography, Divider, Button, Skeleton, Portal } from "@mui/material";
+import { Box, Typography, Divider, Button, Skeleton } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
 import { contracts, hiddenTokens } from "../constants";
 import useNetwork from "../hooks/useNetwork";
@@ -9,7 +10,7 @@ import useTokenDetails from "../hooks/useTokenDetails";
 import useTokenInfo from "../hooks/useTokenInfos";
 import { AMOUNT_REGEXP } from "../utils";
 import TokenSelect from "./TokenSelect";
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import { SwapAmount } from "./SwapAmount";
 import { contract, defaultToken } from "../vite";
 import BigNumber from "bignumber.js";
@@ -20,14 +21,13 @@ import * as vite from "@vite/vitejs"
 import { showToast } from "../layers/Toasts";
 import events from "../events";
 import SwapBalance from "./SwapBalance";
-import Chart from "./Chart";
 // import useChart from "../hooks/useChart";
 
-export default function Swap({
-    //chartRef
+export default function Swap(/*{
+    chartRef
 }:{
-    //chartRef: React.MutableRefObject<undefined>
-}){
+    chartRef: React.MutableRefObject<undefined>
+}*/){
     const network = useNetwork()
     const pairs = usePairs()
     const [from, setFrom] = useState(contracts[network].v1.defaultToken)
@@ -118,7 +118,7 @@ export default function Swap({
     }, [to, amount1, refreshRate])
     useEffect(() => {
         if(lastModified == null)return
-        let listener = () => {
+        const listener = () => {
             setRefreshRate(e => e + 1)
         }
         events.on(`RATE_CHANGE_${from}`, listener)

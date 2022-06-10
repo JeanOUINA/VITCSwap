@@ -1,10 +1,10 @@
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react";
 import { useEffect, useMemo, useState } from "react";
 import { init, dispose } from "klinecharts";
 import * as uuid from "uuid"
 import { Candle } from "../hooks/useChart";
-import { EEventEmitter } from "../events";
 
 export type ChartEvents = {
     prout: [string]
@@ -13,7 +13,6 @@ export default function Chart(props: {
     data: Candle[]
 }) {
     const id = useMemo(() => uuid.v4(), [])
-    const events = useMemo(() => new EEventEmitter<ChartEvents>(), [])
     const [chart, setChart] = useState(null)
     useEffect(() => {
         // Init chart
@@ -21,7 +20,7 @@ export default function Chart(props: {
             candle: {
                 tooltip: {
                     labels: ["T: ", "O: ", "C: ", "H: ", "L: ", "V: "],
-                    defaultValue: 'n/a'
+                    defaultValue: "n/a"
                 }
             }
         });

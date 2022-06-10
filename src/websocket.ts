@@ -110,7 +110,7 @@ export class WebSocketConnection {
         events.emit(data.op, data.d)
     }
 
-    rawsend<op extends string, data extends any>(data:OutgoingMessage<op, data>){
+    rawsend<op extends string, data = any>(data:OutgoingMessage<op, data>){
         this.ws.send(JSON.stringify(data))
     }
 
@@ -131,7 +131,7 @@ export class WebSocketConnection {
 }
 export default new WebSocketConnection()
 
-interface OutgoingMessage<op extends string, data extends any> {
+interface OutgoingMessage<op extends string, data = any> {
     op: op,
     d: data
 }

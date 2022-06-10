@@ -1,4 +1,5 @@
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react"
 import { ReactNode } from "react"
 import useMobile from "../hooks/useMobile"

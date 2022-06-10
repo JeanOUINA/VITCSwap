@@ -55,7 +55,7 @@ export default function useChart(token:string, quote:string, candletime:keyof ty
             setCandles([])
         })
         
-        const listener = (data) => {
+        const listener = () => {
             setRefresh(e => e+1)
             return
             /*

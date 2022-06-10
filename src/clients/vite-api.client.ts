@@ -1,10 +1,5 @@
 import { callViteApi } from "../api"
 
-type BaseResult<T> = {
-  code: number,
-  data: T
-}
-
 export type TokenDetailResult = {
   name: string
   symbol: string

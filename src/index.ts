@@ -10,6 +10,7 @@ import "@fontsource/roboto/700.css"
 import "./toasts.scss"
 import "./scrollbar.scss"
 import "./websocket"
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // stupid typescript loader error
 import favicon from "./assets/logo/favicon.png"

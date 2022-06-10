@@ -1,10 +1,10 @@
 import { fiatTickerToSymbol } from "./stores/FiatCurrencyStore"
 
-export function rawFormatNumber(number:string, separator:string = ","){
+export function rawFormatNumber(number:string, separator = ","){
     if(!/^\d+(\.\d+)?$/.test(number))throw new Error("Invalid Number")
     const decimals = number.split(".")[1]
     const mainNumber = number.split(".")[0]
-    let offset = mainNumber.length % 3
+    const offset = mainNumber.length % 3
     let output = mainNumber.slice(0, offset)
 
     if(offset && offset !== mainNumber.length){
@@ -25,7 +25,7 @@ export function rawFormatNumber(number:string, separator:string = ","){
     return [output]
 }
 
-export function formatNumber(number:string, separator:string = ","){
+export function formatNumber(number:string, separator = ","){
     return rawFormatNumber(number, separator).join(".")
 }
 

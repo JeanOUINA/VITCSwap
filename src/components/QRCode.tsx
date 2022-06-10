@@ -1,4 +1,5 @@
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react"
 import React from "react"
 import qrcode from "qrcode"

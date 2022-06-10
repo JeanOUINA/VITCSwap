@@ -1,11 +1,9 @@
-import NetworkStore, { Network } from "./stores/NetworkStore"
-
 export async function callApi(url:string, method = "GET", body?: any){
     const resp = await fetch("/api"+url, {
         method,
         body: body || null
     })
-    let text = await resp.text()
+    const text = await resp.text()
     let json:any = {
         error: {
             name: "ServerError",
@@ -33,7 +31,7 @@ export async function callViteApi(url:string, method = "GET", body?: any){
             "Content-Type": "application/json"
         } : {}
     })
-    let text = await resp.text()
+    const text = await resp.text()
     let json:any = {
         error: {
             name: "ServerError",

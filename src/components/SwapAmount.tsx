@@ -1,4 +1,5 @@
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react"
 import { InputAdornment, TextField } from "@mui/material"
 import { AMOUNT_REGEXP } from "../utils"
@@ -12,7 +13,7 @@ export function SwapAmount(props:{
     const error = props.amount && !AMOUNT_REGEXP.test(props.amount)
     return <div>
         <TextField variant="outlined" value={props.amount || ""} onChange={(ev) => {
-            const value = ev.target.value.replace(/[^\d\.]/g, "")
+            const value = ev.target.value.replace(/[^\d.]/g, "")
             props.setAmount(value || null)
         }} label="Amount" css={{
             width: "100%"

@@ -1,12 +1,12 @@
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react"
 import { Box, Button, ButtonGroup, Paper } from "@mui/material";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import AddLiquidity from "../../components/AddLiquidity";
 import CreatePair from "../../components/CreatePair";
 import RemoveLiquidity from "../../components/RemoveLiquidity";
 import Swap from "../../components/Swap";
-import useMobile from "../../hooks/useMobile";
 
 export default function Home(){
     const [tab, setTab] = useState(0)

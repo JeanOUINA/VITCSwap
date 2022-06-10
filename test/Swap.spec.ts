@@ -31,7 +31,7 @@ describe("VITCSwap tests", () => {
 
         describe("SBP Voting", () => {
             it("Should not vote for any sbp", async () => {
-                let sbpInfo = await provider.request(
+                const sbpInfo = await provider.request(
                     "contract_getVotedSBP",
                     swap.address
                 )
@@ -68,11 +68,11 @@ describe("VITCSwap tests", () => {
 
         describe("VITE Balance", () => {
             it("Should not have any VITE balance", async () => {
-                let result = await swap.query("getVITEBalance", [deployer.address]);
+                const result = await swap.query("getVITEBalance", [deployer.address]);
                 expect(result)
                     .to.be.an("array")
                     .with.lengthOf(1);
-                expect(result![0]).to.be.equal("0");
+                expect(result[0]).to.be.equal("0");
             })
 
             const depositedAmount = (BigInt(500)*BigInt(1e18)).toString()
@@ -95,11 +95,11 @@ describe("VITCSwap tests", () => {
             })
 
             it("Should have a balance of 500 VITE", async () => {
-                let result = await swap.query("getVITEBalance", [deployer.address]);
+                const result = await swap.query("getVITEBalance", [deployer.address]);
                 expect(result)
                     .to.be.an("array")
                     .with.lengthOf(1);
-                expect(result![0]).to.be.equal(depositedAmount);
+                expect(result[0]).to.be.equal(depositedAmount);
             })
 
             const withdrawnBalance = (BigInt(100)*BigInt(1e18)).toString()
@@ -123,11 +123,11 @@ describe("VITCSwap tests", () => {
             })
 
             it("Should have a balance of 400 VITE", async () => {
-                let result = await swap.query("getVITEBalance", [deployer.address]);
+                const result = await swap.query("getVITEBalance", [deployer.address]);
                 expect(result)
                     .to.be.an("array")
                     .with.lengthOf(1);
-                expect(result![0]).to.be.equal(
+                expect(result[0]).to.be.equal(
                     (BigInt(depositedAmount)-BigInt(withdrawnBalance))
                         .toString()
                 );

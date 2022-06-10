@@ -1,9 +1,8 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-import * as React from 'react';
+import * as React from "react";
 import {
   Link as RouterLink
-} from 'react-router-dom';
-import LinkMUI from '@mui/material/Link';
+} from "react-router-dom";
+import LinkMUI from "@mui/material/Link";
 
 export default function Link({
     href,

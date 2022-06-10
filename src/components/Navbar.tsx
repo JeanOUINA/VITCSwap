@@ -1,4 +1,5 @@
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react"
 import React from "react"
 import AppBar from "@mui/material/AppBar"
@@ -18,7 +19,6 @@ import useViteConnect, { ViteConnectStateType } from "../hooks/useViteConnect"
 
 export default function Navbar(){
     const history = useHistory()
-    const network = useNetwork()
     const isMobile = useMobile()
     return <>
         <AppBar position="static" color="secondary">

@@ -12,7 +12,7 @@ import AppLayers from "./layers";
 import useNetwork from "./hooks/useNetwork"; 
 import { setNetwork } from "./vite";
 
-let hasInitBefore = false
+const hasInitBefore = false
 export default function App():JSX.Element {
     const network = useNetwork()
     useEffect(() => {
