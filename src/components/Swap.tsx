@@ -235,7 +235,7 @@ export default function Swap(/*{
                 <Typography>
                     Slippage Tolerance:
                 </Typography>
-                <Typography color="Highlight">{slippage.toFixed(0)}%</Typography>
+                <Typography color="Highlight">{slippage.toFixed()}%</Typography>
             </Box>
         </Box>
         <Divider css={{
