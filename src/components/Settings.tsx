@@ -45,7 +45,7 @@ export default function Settings(props:{
             InputProps={{
                 endAdornment: <InputAdornment position="end">%</InputAdornment>
             }}
-            placeholder={DEFAULT_SLIPPAGES[0].toFixed()}
+            placeholder={DEFAULT_SLIPPAGES[0]+""}
             error={
                 slippageError
             }
