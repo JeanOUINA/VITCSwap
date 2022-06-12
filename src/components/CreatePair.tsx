@@ -74,7 +74,7 @@ export default function CreatePair(){
                 <Typography>
                     Pair Creation Fee:
                 </Typography>
-                <Typography color="ActiveCaption">
+                <Typography color="Highlight">
                     {pairCreationFee && new BigNumber(pairCreationFee)
                     .shiftedBy(-defaultTokenInfo.decimals)
                     .toFixed() + " " + getTokenSymbolFull(defaultTokenInfo.tokenSymbol, defaultTokenInfo.index) || "Loading..."}

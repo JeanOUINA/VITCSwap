@@ -4,106 +4,109 @@ import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import { join } from "path";
 
-const config: webpack.Configuration = {
-    mode: "development",
-    entry: {
-        index: "./src/index.ts"
-    },
-    output: {
-        path: path.resolve(__dirname, "dist"),
-        filename: "[name].js",
-        publicPath: "./",
-        chunkLoadingGlobal: "webpackJsonp"
-    },
-    module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                exclude: /node_modules/,
-                use: {
-                    loader: "ts-loader",
-                    options: {
-                        transpileOnly: true,
-                        configFile: "tsconfig.webpack.json"
+export default (env, argv) => {
+    const mode = argv.mode || "development"
+    const config: webpack.Configuration = {
+        mode: mode,
+        entry: {
+            index: "./src/index.ts"
+        },
+        output: {
+            path: path.resolve(__dirname, "dist"),
+            filename: "[name].js",
+            publicPath: "./",
+            chunkLoadingGlobal: "webpackJsonp"
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.tsx?$/,
+                    exclude: /node_modules/,
+                    use: {
+                        loader: "ts-loader",
+                        options: {
+                            transpileOnly: true,
+                            configFile: "tsconfig.webpack.json"
+                        }
                     }
+                },
+                {
+                    test: /\.s[ac]ss$/i,
+                    use: [
+                        "style-loader",
+                        "css-loader",
+                        "sass-loader"
+                    ]
+                },
+                {
+                    test: /\.css$/i,
+                    use: [
+                        "style-loader",
+                        "css-loader"
+                    ]
+                },
+                {
+                    test: /\.(png|jpe?g|gif|svg|woff|woff2|eot|ttf)$/i,
+                    use: [
+                        {
+                            loader: "file-loader"
+                        }
+                    ]
                 }
-            },
-            {
-                test: /\.s[ac]ss$/i,
-                use: [
-                    "style-loader",
-                    "css-loader",
-                    "sass-loader"
-                ]
-            },
-            {
-                test: /\.css$/i,
-                use: [
-                    "style-loader",
-                    "css-loader"
-                ]
-            },
-            {
-                test: /\.(png|jpe?g|gif|svg|woff|woff2|eot|ttf)$/i,
-                use: [
-                    {
-                        loader: "file-loader"
-                    }
-                ]
+            ]
+        },
+        devtool: (mode === "production" ? "nosources-" : "") + "source-map",
+        resolve: {
+            extensions: [
+                /** Basic */
+                ".json",
+                ".js",
+    
+                /** Typescript Support */
+                ".ts",
+                ".tsx",
+    
+                /** Stylesheet */
+                ".scss",
+                ".sass",
+                ".css",
+    
+                /** Assets */
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".gif",
+                ".svg",
+                ".woff",
+                ".woff2",
+                ".eot",
+                ".ttf"
+            ],
+            fallback: {
+                buffer: require.resolve("buffer/"),
+                events: require.resolve("events/"),
+                stream: require.resolve("stream-browserify"),
+                crypto: require.resolve("crypto-browserify"),
+                constants: require.resolve("constants-browserify"),
+                assert: require.resolve("assert/"),
+                worker_threads: false,
+                fs: false,
+                perf_hooks: join(__dirname, "src/client/perf_hooks.ts"),
+                path: require.resolve("path-browserify")
             }
-        ]
-    },
-    devtool: "source-map",
-    resolve: {
-        extensions: [
-            /** Basic */
-            ".json",
-            ".js",
-
-            /** Typescript Support */
-            ".ts",
-            ".tsx",
-
-            /** Stylesheet */
-            ".scss",
-            ".sass",
-            ".css",
-
-            /** Assets */
-            ".png",
-            ".jpg",
-            ".jpeg",
-            ".gif",
-            ".svg",
-            ".woff",
-            ".woff2",
-            ".eot",
-            ".ttf"
-        ],
-        fallback: {
-            buffer: require.resolve("buffer/"),
-            events: require.resolve("events/"),
-            stream: require.resolve("stream-browserify"),
-            crypto: require.resolve("crypto-browserify"),
-            constants: require.resolve("constants-browserify"),
-            assert: require.resolve("assert/"),
-            worker_threads: false,
-            fs: false,
-            perf_hooks: join(__dirname, "src/client/perf_hooks.ts"),
-            path: require.resolve("path-browserify")
-        }
-    },
-    plugins: [
-        new webpack.ProvidePlugin({
-            Buffer: ["buffer", "Buffer"],
-        }),
-        new webpack.DefinePlugin({
-            "process": "({\"browser\": null})"
-        }),
-        new ForkTsCheckerWebpackPlugin(),
-        new HtmlWebpackPlugin({
-            title: "VITCSwap",
-            templateContent: ({htmlWebpackPlugin}) => `<!DOCTYPE html>
+        },
+        plugins: [
+            new webpack.ProvidePlugin({
+                Buffer: ["buffer", "Buffer"],
+            }),
+            new webpack.DefinePlugin({
+                "process": "({\"browser\": null})",
+                "webpack.mode": JSON.stringify(mode)
+            }),
+            new ForkTsCheckerWebpackPlugin(),
+            new HtmlWebpackPlugin({
+                title: "VITCSwap",
+                templateContent: ({htmlWebpackPlugin}) => `<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -121,15 +124,16 @@ const config: webpack.Configuration = {
         ${htmlWebpackPlugin.tags.bodyTags}
     </body>
 </html>`,
-            inject: false
-        })
-    ],
-    target: "web",
-    optimization: {
-      splitChunks: {
-        chunks: "all",
-      }
+                inject: false
+            })
+        ],
+        target: "web",
+        optimization: {
+          splitChunks: {
+            chunks: "all",
+          }
+        }
     }
+    
+    return config
 }
-
-export default config;

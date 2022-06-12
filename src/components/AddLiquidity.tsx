@@ -161,7 +161,7 @@ export default function AddLiquidity(){
                     <Typography>
                         Rate:
                     </Typography>
-                    <Typography color="ActiveCaption">{new BigNumber(amount0).div(amount1).precision(6).toFixed()} {fromToken.tokenSymbol} per {toToken.tokenSymbol}</Typography>
+                    <Typography color="Highlight">{new BigNumber(amount0).div(amount1).precision(6).toFixed()} {fromToken.tokenSymbol} per {toToken.tokenSymbol}</Typography>
                 </Box> : null        
             }
         </Box>

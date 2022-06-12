@@ -12,7 +12,7 @@ on:
       - '**.jsx'
 
 jobs:
-  build-and-deploy:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

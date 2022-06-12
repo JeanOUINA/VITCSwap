@@ -17,6 +17,9 @@ import { FormControlLabel, Radio, RadioGroup, Chip } from "@mui/material"
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import useViteConnect, { ViteConnectStateType } from "../hooks/useViteConnect"
 
+import logo from "../assets/logo/vitcswap/round_without_text.png"
+import Settings from "./Settings"
+
 export default function Navbar(){
     const history = useHistory()
     const isMobile = useMobile()
@@ -33,12 +36,19 @@ export default function Navbar(){
                     }} css={{
                         marginRight: !isMobile ? 10 : 0
                     }}>
+                        <img src={logo} height={46} width={46} css={{
+                            marginRight: 10
+                        }}/>
                         <Typography variant="h6">
                             VITCSwap
                         </Typography>
                     </Button>
                 </div>
-                <div>
+                <div css={{
+                    display: "flex",
+                    gap: 10
+                }}>
+                    <SettingsButton/>
                     <ViteConnectInterface/>
                 </div>
             </Toolbar>
@@ -69,6 +79,21 @@ export function NetworkSelection(){
         </RadioGroup>
     </>
 }
+
+export function SettingsButton(){
+    return <Button color="inherit" onClick={() => {
+        pushLayer(<Modal key="layer-settings" close={() => {
+            closeLayer("layer-settings")
+        }}>
+            <Settings close={() => {
+                closeLayer("layer-settings")
+            }}/>
+        </Modal>)
+    }}>
+        Settings
+    </Button>
+}
+
 export function openViteConnect(){
     pushLayer(<Modal key="layer-viteconnect" close={() => {
         closeLayer("layer-viteconnect")

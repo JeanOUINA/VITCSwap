@@ -9,13 +9,23 @@ contract VITCSwap is Votable {
     vitetoken constant public VITE_TOKEN = "tti_5649544520544f4b454e6e40";
     address payable public DAO_ADDRESS = payable("vite_9c13b9720809499a238d33d5bb72e69fe0eb4fb2678a389140");
     vitetoken constant public NULL_TOKEN = "tti_000000000000000000004cfd";
-    uint public PAIR_CREATION_FEE = 100 vite;
+    uint public PAIR_CREATION_FEE = 500 vite;
     uint public immutable UINT256_MAX = 2**256-1;
+    uint public lpfee = 20; // 0.2%
+    uint public daofee = 20; // 0.2%
     
     event PairCreationFeeChange(uint fee);
     function changePairCreationFee(uint newFee) external onlyOwner {
         PAIR_CREATION_FEE = newFee;
         emit PairCreationFeeChange(newFee);
+    }
+
+    event SwapFeeChange(uint lpfee, uint daofee);
+    function changeSwapFee(uint lpFee, uint daoFee) external onlyOwner {
+        require(lpFee + daoFee < 200); // cannot go above 2%
+        lpfee = lpFee;
+        daofee = daoFee;
+        emit SwapFeeChange(lpfee, daofee);
     }
 
     event DAOAddressChange(address addr);
@@ -217,50 +227,65 @@ contract VITCSwap is Votable {
         require(tokenLiquidity[token].totalVITE > 0);
 
         Liquidity memory liq = tokenLiquidity[token];
-        return (liq.totalVITE - liq.k / (liq.total+amount)) * 998/1000;
+        uint swapped = (liq.totalVITE - liq.k / (liq.total+amount));
+
+        return (10000-lpfee-daofee)*swapped/10000;
     }
     function getInversedVITEConversion(vitetoken token, uint amount) view public returns(uint returnAmount) {
         require(pairs[token]);
         require(tokenLiquidity[token].totalVITE > 0);
 
+        uint swapped = 10000*amount/(10000-lpfee-daofee);
+
         Liquidity memory liq = tokenLiquidity[token];
-        return liq.k/(liq.totalVITE-amount*1000/998) - liq.total;
+        return liq.k/(liq.totalVITE-swapped) - liq.total;
     }
     function getCurrencyConversion(vitetoken token, uint amount) view public returns(uint returnAmount) {
         require(pairs[token]);
         require(tokenLiquidity[token].totalVITE > 0);
 
+        uint realAmount = amount*(10000-lpfee-daofee)/10000;
+
         Liquidity memory liq = tokenLiquidity[token];
-        uint fee = amount * 2/1000;
-        return liq.total - liq.k / (liq.totalVITE+amount-fee);
+        return liq.total - liq.k / (liq.totalVITE + realAmount);
     }
     function getInversedCurrencyConversion(vitetoken token, uint amount) view public returns(uint returnAmount) {
         require(pairs[token]);
         require(tokenLiquidity[token].totalVITE > 0);
 
         Liquidity memory liq = tokenLiquidity[token];
-        return (liq.k/(liq.total-amount)-liq.totalVITE)*1000/998;
+        uint realAmount = (liq.k/(liq.total-amount)-liq.totalVITE);
+
+        return 10000*realAmount/(10000-lpfee-daofee);
     }
 
     // the SwapInternal event will be used to refresh prices on the frontend
     event SwapInternal(address indexed _address, vitetoken indexed fromToken, vitetoken indexed toToken, uint fromAmount, uint toAmount, uint total, uint totalVITE);
     // the Swap event will be used to have order history
     event Swap(address indexed _address, vitetoken indexed fromToken, vitetoken indexed toToken, uint fromAmount, uint toAmount);
-    function swap(address recipient, vitetoken targetToken, uint minimum) external payable {
+    function swap(address payable recipient, vitetoken targetToken, uint minimum) external payable {
         require(msg.token != targetToken);
         
         uint amount = msg.value;
+        uint fee = 0;
         if(msg.token != VITE_TOKEN){
             require(pairs[msg.token]);
             Liquidity storage liq = tokenLiquidity[msg.token];
-            require(liq.totalVITE > 0);
+            require(liq.totalVITE > 0 && amount < liq.total);
 
             uint viteAmount = liq.totalVITE - liq.k / (liq.total+amount);
             // don't process the swap if there's not enough liquidity to handle it
             require(viteAmount > 0);
+            uint lpFee = viteAmount*lpfee/10000;
+            fee += viteAmount*daofee/10000;
 
             liq.total += amount;
-            liq.totalVITE -= viteAmount;
+            // dao fee gets swapped, lpfee gets added to the totalVite pool
+            liq.totalVITE -= viteAmount - lpFee;
+            // change k because of the fees added to the pool
+            liq.k = liq.totalVITE * liq.total;
+            // substract fees
+            viteAmount -= lpFee + fee;
             emit SwapInternal(msg.sender, msg.token, VITE_TOKEN, amount, viteAmount, liq.total, liq.totalVITE);
             amount = viteAmount;
         }
@@ -268,15 +293,23 @@ contract VITCSwap is Votable {
         if(targetToken != VITE_TOKEN){
             require(pairs[targetToken]);
             Liquidity storage liq = tokenLiquidity[targetToken];
-            require(liq.totalVITE > 0);
+            require(liq.totalVITE > amount);
+
+            uint lpFee = amount*lpfee/10000;
+            uint daoFee = amount*daofee/10000;
+
+            // substract fee
+            amount -= lpFee + daoFee;
+            fee += daoFee;
 
             uint tokenAmount = liq.total - liq.k / (liq.totalVITE+amount);
             // don't process the swap if there's not enough liquidity to handle it
             require(tokenAmount > 0);
 
             liq.total -= tokenAmount;
-            liq.totalVITE += amount;
-            emit SwapInternal(msg.sender, VITE_TOKEN, targetToken, amount, tokenAmount, liq.total, liq.totalVITE);
+            liq.totalVITE += amount + lpFee;
+            liq.k = liq.total * liq.totalVITE;
+            emit SwapInternal(msg.sender, VITE_TOKEN, targetToken, amount + lpFee + daoFee, tokenAmount, liq.total, liq.totalVITE);
             amount = tokenAmount;
         }
         emit Swap(msg.sender, msg.token, targetToken, msg.value, amount);
@@ -284,7 +317,8 @@ contract VITCSwap is Votable {
         // slippage
         require(amount >= minimum);
 
-        payable(recipient).transfer(targetToken, amount);
+        recipient.transfer(targetToken, amount);
+        DAO_ADDRESS.transfer(VITE_TOKEN, fee);
     }
 
     // lp tokens

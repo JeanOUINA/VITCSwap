@@ -21,6 +21,7 @@ import * as vite from "@vite/vitejs"
 import { showToast } from "../layers/Toasts";
 import events from "../events";
 import SwapBalance from "./SwapBalance";
+import useSlippage from "../hooks/useSlippage";
 // import useChart from "../hooks/useChart";
 
 export default function Swap(/*{
@@ -28,6 +29,7 @@ export default function Swap(/*{
 }:{
     chartRef: React.MutableRefObject<undefined>
 }*/){
+    const slippage = useSlippage()
     const network = useNetwork()
     const pairs = usePairs()
     const [from, setFrom] = useState(contracts[network].v1.defaultToken)
@@ -224,7 +226,7 @@ export default function Swap(/*{
                     <Typography>
                         Rate:
                     </Typography>
-                    <Typography color="ActiveCaption">{new BigNumber(amount0).div(amount1).precision(6).toFixed()} {fromToken.tokenSymbol} per {toToken.tokenSymbol}</Typography>
+                    <Typography color="Highlight">{new BigNumber(amount0).div(amount1).precision(6).toFixed()} {fromToken.tokenSymbol} per {toToken.tokenSymbol}</Typography>
                 </Box> : null        
             }
             <Box css={{
@@ -233,7 +235,7 @@ export default function Swap(/*{
                 <Typography>
                     Slippage Tolerance:
                 </Typography>
-                <Typography color="Highlight">0.5%</Typography>
+                <Typography color="Highlight">{slippage.toFixed(0)}%</Typography>
             </Box>
         </Box>
         <Divider css={{
@@ -265,7 +267,10 @@ export default function Swap(/*{
                             to,
                             new BigNumber(amount1)
                             .shiftedBy(toToken.decimals)
-                            .times(0.995)
+                            .times(
+                                new BigNumber(1)
+                                .minus(slippage/100)
+                            )
                             .toFixed(0)
                         ])
                     })

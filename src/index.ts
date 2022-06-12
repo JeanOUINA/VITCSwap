@@ -9,11 +9,10 @@ import "@fontsource/roboto/500.css"
 import "@fontsource/roboto/700.css"
 import "./toasts.scss"
 import "./scrollbar.scss"
-import "./websocket"
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // stupid typescript loader error
-import favicon from "./assets/logo/favicon.png"
+import favicon from "./assets/logo/vitcswap/transparent_without_text_full_size.png"
 
 ReactDOM.render(React.createElement(App), document.querySelector("#app-mount"))
 
@@ -24,3 +23,11 @@ if (!link) {
     document.getElementsByTagName("head")[0].appendChild(link)
 }
 link.href = favicon
+
+if(webpack.mode === "development"){
+    // we're in development, start the reloading
+    import("./websocket")
+    .then(({default: websocket}) => {
+        websocket.connect()
+    })
+}

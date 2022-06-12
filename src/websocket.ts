@@ -10,15 +10,9 @@ export enum WebSocketStates {
 export class WebSocketConnection {
     url:string
     ws:WebSocket
-    pingTimeout: NodeJS.Timeout = null
-    subscriptions:
-        (
-            "exchange_rates"
-        )[] = []
     constructor(){
-        this.url = "wss://vitcscan.thomiz.dev"
-        this.debug(`Connecting to ${this.url} with websockets.`)
-        this.connect()
+        this.url = "ws"+location.origin.slice(4)
+        this.debug(`Connecting to ${this.url} with websocket.`)
         
         let lastState = WebSocketStates.CLOSED
         events.on("WS_STATE", state => {
@@ -30,7 +24,7 @@ export class WebSocketConnection {
     }
 
     debug(...messages:any[]){
-        console.debug(...messages)
+        console.debug("WebSocket", ...messages)
     }
 
     get state(){
@@ -59,23 +53,17 @@ export class WebSocketConnection {
                     resolve()
                 }
             })
-            if(this.pingTimeout)clearTimeout(this.pingTimeout)
-            this.pingTimeout = setTimeout(() => {
-                if(this.state === "OPEN")this.ws.close(1000, "PingTimeout")
-            }, 60*1000)
 
             events.emit("WS_STATE", this.state)
             this.debug(`WebSocket Connected`)
             ws.onmessage = (data) => {
                 this.onMessage(data)
             }
-            this.updateSubscriptions()
 
             const error = await new Promise<Event|void>((resolve) => {
                 ws.onerror = (err) => resolve(err)
                 ws.onclose = () => resolve()
             })
-            if(this.pingTimeout)clearTimeout(this.pingTimeout)
             console.error(error || "close")
             throw new Error("WebSocket disconnected")
         }catch(err){
@@ -90,48 +78,12 @@ export class WebSocketConnection {
     }
 
     onMessage(message:MessageEvent<string>){
-        const data:{
-            op: string,
-            d: any
-        } = JSON.parse(message.data)
-        switch(data.op){
-            case "ping": {
-                if(this.pingTimeout)clearTimeout(this.pingTimeout)
-                this.pingTimeout = setTimeout(() => {
-                    this.ws.close(1000, "PingTimeout")
-                }, 60*1000)
-                this.rawsend({
-                    op: "pong",
-                    d: Date.now()
-                })
-                return
+        switch(message.data){
+            case "update": {
+                // the files were updated, reload
+                location.reload()
             }
         }
-        events.emit(data.op, data.d)
-    }
-
-    rawsend<op extends string, data = any>(data:OutgoingMessage<op, data>){
-        this.ws.send(JSON.stringify(data))
-    }
-
-    willUpdateSubs = false
-
-    updateSubscriptions(){
-        if(this.willUpdateSubs)return
-        this.willUpdateSubs = true
-        setImmediate(() => {
-            this.willUpdateSubs = false
-            if(this.state !== WebSocketStates.OPEN)return
-            this.rawsend({
-                op: "subscriptions",
-                d: this.subscriptions
-            })
-        })
     }
 }
 export default new WebSocketConnection()
-
-interface OutgoingMessage<op extends string, data = any> {
-    op: op,
-    d: data
-}
