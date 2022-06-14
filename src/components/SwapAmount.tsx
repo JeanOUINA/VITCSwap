@@ -25,6 +25,6 @@ export function SwapAmount(props:{
             style: {
                 textAlign: "right"
             }
-        }} disabled={props.disabled}/>
+        }} disabled={props.disabled} autoComplete="off" />
     </div>
 }
