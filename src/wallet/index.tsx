@@ -46,7 +46,7 @@ export class ViteConnect extends EEventEmitter<{
             contract.methods.getVITEBalance.call([
                 this.accounts[0]
             ]).then(balance => {
-                //if(balance[1].map.userBalance === "0")return
+                if(balance[1].map.userBalance === "0")return
                 const vite_balance = new BigNumber(balance[1].map.userBalance)
                 .shiftedBy(-18)
                 .toFixed(0)
