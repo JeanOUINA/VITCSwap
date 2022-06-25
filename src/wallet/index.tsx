@@ -48,8 +48,8 @@ export class ViteConnect extends EEventEmitter<{
             ]).then(balance => {
                 if(balance[1].map.userBalance === "0")return
                 const vite_balance = new BigNumber(balance[1].map.userBalance)
-                .shiftedBy(-18)
-                .toFixed(0)
+                    .shiftedBy(-18)
+                    .toFixed()
 
                 toast((t) => {
                     const [disabled, setDisabled] = useState(false)
