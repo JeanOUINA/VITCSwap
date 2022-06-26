@@ -157,7 +157,9 @@ export default function Swap(/*{
                         details={fromDetails.details}
                         tokenId={from}
                         setToken={(tokenId) => {
+                            setLastModified(1)
                             setFrom(tokenId)
+                            setRefreshRate(e => e + 1)
                         }}
                         disabled={disabled}
                         exclude={hiddenTokens}
@@ -202,7 +204,9 @@ export default function Swap(/*{
                         details={toDetails.details}
                         tokenId={to}
                         setToken={(tokenId) => {
+                            setLastModified(0)
                             setTo(tokenId)
+                            setRefreshRate(e => e + 1)
                         }}
                         disabled={disabled}
                         exclude={hiddenTokens}
