@@ -17,7 +17,7 @@ export default function Home(){
     const [tab, setTab] = useState(0)
     const chartRef = useRef()
     const isMobile = useMobile()
-    const chartDisabled = useChartDisabled()
+    const chartDisabled = useChartDisabled() || isMobile
     useEffect(() => {
         const eulaAccept = EULAStore.getAccept()
         if(!eulaAccept){
@@ -66,7 +66,7 @@ export default function Home(){
             flexDirection: "row",
             gap: 100
         }}>
-            {tab === 0 && !isMobile && <Paper css={{
+            {tab === 0 && <Paper css={{
                 padding: 10,
                 width: 800,
                 display: chartDisabled ? "none" : "initial"
