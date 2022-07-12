@@ -26,7 +26,7 @@ export default function useChart(token:string, quote:string, candletime:keyof ty
         const now = Date.now()/1000
         const startIndex = (now-(now%duration))/duration-100
         
-        fetch(`http://127.0.0.1:3002/api/candles/${token}/${quote}/${candletime}?start=${startIndex}`)
+        fetch(`https://vitcswap-api.thomiz.dev/api/candles/${token}/${quote}/${candletime}?start=${startIndex}`)
         .then(async res => {
             if(cancel)return
             const content:{
@@ -44,7 +44,7 @@ export default function useChart(token:string, quote:string, candletime:keyof ty
                     close: new BigNumber(candle[1]).toNumber(),
                     high: new BigNumber(candle[2]).toNumber(),
                     low: new BigNumber(candle[3]).toNumber(),
-                    volume: new BigNumber(candle[4]).toNumber(),
+                    volume: new BigNumber(candle[5]).toNumber(),
                     timestamp: duration*(startIndex + i)*1000
                 }
             }).filter(e => !!e))

@@ -13,18 +13,20 @@ import Modal from "../layers/Modal"
 import QRCode from "./QRCode"
 import useMobile from "../hooks/useMobile"
 import useNetwork from "../hooks/useNetwork"
-import { FormControlLabel, Radio, RadioGroup, Chip } from "@mui/material"
+import { FormControlLabel, Radio, RadioGroup, Chip, Dialog } from "@mui/material"
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import HistoryIcon from "@mui/icons-material/History";
 import useViteConnect, { ViteConnectStateType } from "../hooks/useViteConnect"
 
 import logo from "../assets/logo/vitcswap/round_without_text.png"
 import Settings from "./Settings"
+import History from "./History"
 
 export default function Navbar(){
     const history = useHistory()
     const isMobile = useMobile()
     return <>
-        <AppBar position="static" color="secondary">
+        <AppBar position="sticky" color="secondary">
             <Toolbar>
                 <div css={{
                     flexGrow: 1,
@@ -48,6 +50,7 @@ export default function Navbar(){
                     display: "flex",
                     gap: 10
                 }}>
+                    <HistoryButton/>
                     <SettingsButton/>
                     <ViteConnectInterface/>
                 </div>
@@ -100,6 +103,31 @@ export function openViteConnect(){
     }}>
         <ViteConnectQRCode/>
     </Modal>)
+}
+
+export function HistoryButton(){
+    const [, walletState] = useViteConnect()
+    const [isOpen, setIsOpen] = React.useState(false)
+    if(walletState !== ViteConnectStateType.READY){
+        return null
+    }
+
+    return <>
+        <Button color="inherit" onClick={() => {
+            setIsOpen(true)
+        }}>
+            <HistoryIcon/>
+        </Button>
+        <Dialog open={isOpen} onClose={() => {
+            setIsOpen(false)
+        }} PaperProps={{
+            elevation: 1
+        }}>
+            <History close={() => {
+                setIsOpen(false)
+            }}/>
+        </Dialog>
+    </>
 }
 
 function ViteConnectInterface(){

@@ -1,8 +1,9 @@
 /** @jsx jsx */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react"
-import { Box, Button, Divider, InputAdornment, TextField } from "@mui/material"
+import { Box, Button, Divider, FormLabel, InputAdornment, Switch, TextField } from "@mui/material"
 import { useState, useMemo } from "react"
+import ChartDisableStore from "../stores/ChartDisableStore"
 import SlippageStore from "../stores/SlippageStore"
 
 const DEFAULT_SLIPPAGES = [
@@ -14,13 +15,16 @@ const DEFAULT_SLIPPAGES = [
 export default function Settings(props:{
     close:()=>void
 }){
+    const [chartDisabled, setChartDisabled] = useState(() => {
+        return ChartDisableStore.getDisabled()
+    })
     const [slippage, setSlippage] = useState(() => {
         return SlippageStore.getSlippage().toFixed(1)
     })
     const [slippageDefault, setSlippageDefault] = useState(() => {
         return DEFAULT_SLIPPAGES.includes(Number(slippage))
     })
-    const changed_fields:Set<"slippage"> = useMemo(() => new Set<"slippage">(), [])
+    const changed_fields:Set<"slippage"|"chart_disabled"> = useMemo(() => new Set(), [])
     const slippageError = useMemo(() => {
         return !/^\d{1,3}(\.\d+)?$/.test(slippage) ||
         !SlippageStore.isValidSlippage(Number(slippage))
@@ -73,6 +77,17 @@ export default function Settings(props:{
             marginTop: 20,
             marginBottom: 20
         }} />
+        <div>
+            <FormLabel>Disable Chart</FormLabel>
+            <Switch checked={chartDisabled} onChange={(ev, value) => {
+                setChartDisabled(value)
+                changed_fields.add("chart_disabled")
+            }} />
+        </div>
+        <Divider css={{
+            marginTop: 20,
+            marginBottom: 20
+        }} />
         <div css={{
             display: "flex",
             justifyContent: "right"
@@ -83,6 +98,9 @@ export default function Settings(props:{
                         case "slippage": {
                             SlippageStore.setSlippage(Number(slippage))
                             break
+                        }
+                        case "chart_disabled": {
+                            ChartDisableStore.setDisabled(chartDisabled)
                         }
                     }
                 }

@@ -1,3 +1,4 @@
+import { VITCSWAP_API_URL } from "./constants"
 import events from "./events"
 
 export enum WebSocketStates {
@@ -11,16 +12,8 @@ export class WebSocketConnection {
     url:string
     ws:WebSocket
     constructor(){
-        this.url = "ws"+location.origin.slice(4)
+        this.url = `ws${VITCSWAP_API_URL}`
         this.debug(`Connecting to ${this.url} with websocket.`)
-        
-        let lastState = WebSocketStates.CLOSED
-        events.on("WS_STATE", state => {
-            if(state === lastState)return
-            lastState = state
-            if(state !== WebSocketStates.OPEN)return
-            // Connection opened
-        })
     }
 
     debug(...messages:any[]){
@@ -54,7 +47,7 @@ export class WebSocketConnection {
                 }
             })
 
-            events.emit("WS_STATE", this.state)
+            events.emit("WS_STATE_VITCSWAP", this.state)
             this.debug(`WebSocket Connected`)
             ws.onmessage = (data) => {
                 this.onMessage(data)
@@ -70,7 +63,7 @@ export class WebSocketConnection {
             console.error(err)
             this.debug("trying to reconnect")
             this.ws = null
-            events.emit("WS_STATE", this.state)
+            events.emit("WS_STATE_VITCSWAP", this.state)
             setTimeout(() => {
                 this.connect()
             }, 2000)
@@ -78,10 +71,14 @@ export class WebSocketConnection {
     }
 
     onMessage(message:MessageEvent<string>){
-        switch(message.data){
-            case "update": {
-                // the files were updated, reload
-                location.reload()
+        const data = JSON.parse(message.data)
+        switch(data.op){
+            case "candle_update": {
+                const {
+                    token
+                } = data.d
+
+                events.emit(`CANDLE_UPDATE_${token}`, data.d)
             }
         }
     }

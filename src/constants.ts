@@ -1,6 +1,7 @@
 import { Network } from "./stores/NetworkStore"
 import * as vite from "@vite/vitejs"
 
+export const VITCSWAP_API_URL = "s://vitcswap-api.thomiz.dev"
 export const colors = {
     Yellow: "#fff714",
     Red: "red",

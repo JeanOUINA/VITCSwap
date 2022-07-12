@@ -20,7 +20,7 @@ export function setNetwork(network: Network){
     .then(({tokenInfoList: tokens}) => {
         for(const token of tokens){
             tokenInfos.set(token.tokenId, token)
-            events.emit("TOKEN_INFOS_UPDATE_"+token.tokenId, token)
+            events.emit(`TOKEN_INFOS_UPDATE_${token.tokenId}`, token)
         }
         events.emit("TOKEN_INFOS_UPDATE", tokenInfos)
     })
@@ -83,3 +83,11 @@ export function setNetwork(network: Network){
 }
 
 setNetwork(NetworkStore.getNetwork())
+
+export function getTokenTicker(symbol:string, index:number){
+    let ticker = `${symbol}-${"0".repeat(3-(""+index).length)+index}`
+    if(ticker.endsWith("-000")){
+        ticker = ticker.slice(0, -4)
+    }
+    return ticker
+}

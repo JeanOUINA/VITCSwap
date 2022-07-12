@@ -1,8 +1,8 @@
 import React from "react"
-import events from "../events"
+import events, { EventsDefinition } from "../events"
 import useForceUpdate from "./useForceUpdate"
 
-export default function useEvent<T=any>(event:string, defaultValue:T):T{
+export default function useEvent<T=any>(event:keyof EventsDefinition, defaultValue:T):T{
     const [value, setValue] = React.useState([defaultValue])
     const forceUpdate = useForceUpdate()
     React.useEffect(() => {

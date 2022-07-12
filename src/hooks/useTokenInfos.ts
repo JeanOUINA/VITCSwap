@@ -7,7 +7,7 @@ export default function useTokenInfo():Map<string, TokenInfo>{
 }
 
 export function useSpecificTokenInfo(token:string):Partial<TokenInfo>{
-    return useEvent("TOKEN_INFOS_UPDATE_"+token, tokenInfos.get(token) || {
+    return useEvent(`TOKEN_INFOS_UPDATE_${token}`, tokenInfos.get(token) || {
         tokenSymbol: token,
         index: 0,
         decimals: 0

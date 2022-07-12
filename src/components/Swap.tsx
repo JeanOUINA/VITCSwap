@@ -8,7 +8,7 @@ import useNetwork from "../hooks/useNetwork";
 import usePairs from "../hooks/usePairs";
 import useTokenDetails from "../hooks/useTokenDetails";
 import useTokenInfo from "../hooks/useTokenInfos";
-import { AMOUNT_REGEXP } from "../utils";
+import { AMOUNT_REGEXP, getTokenSymbolFull } from "../utils";
 import TokenSelect from "./TokenSelect";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import { SwapAmount } from "./SwapAmount";
@@ -22,13 +22,15 @@ import { showToast } from "../layers/Toasts";
 import events from "../events";
 import SwapBalance from "./SwapBalance";
 import useSlippage from "../hooks/useSlippage";
+import { Portal } from "@mui/core";
+import Chart from "./Chart";
 // import useChart from "../hooks/useChart";
 
-export default function Swap(/*{
+export default function Swap({
     chartRef
 }:{
     chartRef: React.MutableRefObject<undefined>
-}*/){
+}){
     const slippage = useSlippage()
     const network = useNetwork()
     const pairs = usePairs()
@@ -132,9 +134,27 @@ export default function Swap(/*{
     }, [from, to, lastModified])
 
     return <>
-        {/*<Portal container={chartRef.current}>
-            <Chart data={candles || []}/>
-        </Portal>*/}
+        <Portal container={chartRef.current}>
+            {fromToken && toToken && <Typography variant="h6">
+                {
+                    getTokenSymbolFull(fromToken.tokenSymbol, fromToken.index)
+                }/{
+                    getTokenSymbolFull(toToken.tokenSymbol, toToken.index)
+                }
+            </Typography> || <div css={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                textAlign: "center"
+            }}>
+                <Skeleton css={{
+                    height: 32,
+                    width: 100
+                }}/>
+            </div>}
+            <Chart token={from} quote={to} />
+        </Portal>
         <Box css={{
             marginBottom: 10
         }}>

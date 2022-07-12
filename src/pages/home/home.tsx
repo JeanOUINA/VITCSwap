@@ -2,19 +2,22 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx } from "@emotion/react"
 import { Alert, Box, Button, ButtonGroup, Paper, Typography } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AddLiquidity from "../../components/AddLiquidity";
 import CreatePair from "../../components/CreatePair";
 import RemoveLiquidity from "../../components/RemoveLiquidity";
 import Swap from "../../components/Swap";
+import { useChartDisabled } from "../../hooks/useChartDisabled";
+import useMobile from "../../hooks/useMobile";
 import { closeLayer, pushLayer } from "../../layers";
 import Modal from "../../layers/Modal";
 import EULAStore from "../../stores/EULAStore";
 
 export default function Home(){
     const [tab, setTab] = useState(0)
-    // const chartRef = useRef()
-    // const isMobile = useMobile()
+    const chartRef = useRef()
+    const isMobile = useMobile()
+    const chartDisabled = useChartDisabled()
     useEffect(() => {
         const eulaAccept = EULAStore.getAccept()
         if(!eulaAccept){
@@ -63,12 +66,11 @@ export default function Home(){
             flexDirection: "row",
             gap: 100
         }}>
-            {/*tab === 0 && !isMobile && <Paper css={{
+            {tab === 0 && !isMobile && <Paper css={{
                 padding: 10,
-                width: 800
-            }} elevation={2} ref={chartRef}>
-                
-            </Paper>*/}
+                width: 800,
+                display: chartDisabled ? "none" : "initial"
+            }} elevation={2} ref={chartRef} />}
 
             <Paper css={{
                 padding: 10,
@@ -86,7 +88,7 @@ export default function Home(){
                         <Button onClick={() => setTab(3)}>Create Pair</Button>
                     </ButtonGroup>
                 </Box>
-                {tab === 0 && <Swap /> /*chartRef={chartRef}*/}
+                {tab === 0 && <Swap chartRef={chartRef} />}
                 {tab === 1 && <AddLiquidity/>}
                 {tab === 2 && <RemoveLiquidity/>}
                 {tab === 3 && <CreatePair/>}

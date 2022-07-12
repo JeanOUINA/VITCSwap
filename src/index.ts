@@ -26,7 +26,7 @@ link.href = favicon
 
 if(webpack.mode === "development"){
     // we're in development, start the reloading
-    import("./websocket")
+    import("./reloadws")
     .then(({default: websocket}) => {
         websocket.connect()
     })
