@@ -8,7 +8,6 @@ import CreatePair from "../../components/CreatePair";
 import RemoveLiquidity from "../../components/RemoveLiquidity";
 import Swap from "../../components/Swap";
 import { useChartDisabled } from "../../hooks/useChartDisabled";
-import useMobile from "../../hooks/useMobile";
 import { closeLayer, pushLayer } from "../../layers";
 import Modal from "../../layers/Modal";
 import EULAStore from "../../stores/EULAStore";
@@ -16,8 +15,7 @@ import EULAStore from "../../stores/EULAStore";
 export default function Home(){
     const [tab, setTab] = useState(0)
     const chartRef = useRef()
-    const isMobile = useMobile()
-    const chartDisabled = useChartDisabled() || isMobile
+    const chartDisabled = useChartDisabled()
     useEffect(() => {
         const eulaAccept = EULAStore.getAccept()
         if(!eulaAccept){
