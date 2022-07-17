@@ -50,6 +50,16 @@ export default function TokenSelect(props:{
             >
                 {[...(props.noPairs ? tokenInfos.keys() : pairs)].filter(token => {
                     return !(props.exclude || new Set()).has(token)
+                }).sort((a, b) => {
+                    const tokena = tokenInfos.get(a)
+                    const tokenb = tokenInfos.get(b)
+                    if(tokena && tokenb){
+                        return getTokenSymbolFull(tokena.tokenSymbol, tokena.index).localeCompare(
+                            getTokenSymbolFull(tokenb.tokenSymbol, tokenb.index)
+                        )
+                    }else if(!tokena && !tokenb){
+                        return 0
+                    }else return !tokena ? -1 : 1
                 }).map(tokenId => {
                     if(props.disableNative && defaultToken === tokenId)return null
                     if(props.noPairs && pairs.has(tokenId))return null
